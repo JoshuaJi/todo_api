@@ -5,7 +5,8 @@ var todos = [];
 var todoNextId = 1;
 var bodyParser = require('body-parser');
 var _ = require('underscore');
-var db = require('./db.js')
+var db = require('./db.js');
+var bcrypt = require('bcrypt');
 
 app.get('/', function(req, res) {
 	res.send('todo api root');
@@ -124,7 +125,19 @@ app.post('/users', function(req, res){
 	})
 });
 
-db.sequelize.sync({force: true}).then(function(){
+app.post('/users/login', function(req, res){
+	var body = _.pick(req.body, 'email', 'password');
+
+	db.user.authenticate(body).then(function(user){
+		res.json(user.toPublicJSON());
+	}, function(e){
+		res.status(401).send();
+	})
+
+	
+});
+
+db.sequelize.sync().then(function(){
 	app.listen(PORT, function() {
 		console.log('express listening on ' + PORT);
 })
